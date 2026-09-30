@@ -5,8 +5,15 @@ const cors = require('cors');
 
 const app = express();
 
+// Middleware 
 app.use(cors());
 app.use(express.json());
+
+// Routes — import and use auth routes
+const authRoutes = require('./src/routes/authRoutes');
+app.use('/api/auth', authRoutes);
+
+
 
 app.get('/', (req, res) => {
   res.json({ message: 'StoreRate API is running' });
