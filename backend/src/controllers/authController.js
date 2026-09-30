@@ -102,4 +102,47 @@ const login = async (req, res) => {
   }
 };
 
-module.exports = { register, login };
+// UPDATE PASSWORD
+const updatePassword = async (req, res) => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+
+    // Validating new password format
+    const passwordRegex = /^(?=.*[A-Z])(?=.*[!@#$%^&*(),.?":{}|<>]).{8,16}$/;
+    if (!passwordRegex.test(newPassword)) {
+      return res.status(400).json({
+        message: 'New password must be 8-16 characters with at least one uppercase letter and one special character'
+      });
+    }
+
+    // Get current user from DB using id from token 
+    const result = await pool.query(
+      'SELECT * FROM users WHERE id = $1',
+      [req.user.id]
+    );
+
+    const user = result.rows[0];
+
+    // Check current password is correct
+    const isMatch = await bcrypt.compare(currentPassword, user.password);
+    if (!isMatch) {
+      return res.status(400).json({ message: 'Current password is incorrect' });
+    }
+
+    // Hash new password and update
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    await pool.query(
+      'UPDATE users SET password = $1 WHERE id = $2',
+      [hashedPassword, req.user.id]
+    );
+
+    res.status(200).json({ message: 'Password updated successfully' });
+
+  } catch (err) {
+    console.error('Update password error:', err.message);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+
+module.exports = { register, login, updatePassword };
