@@ -1,1 +1,15 @@
 @import "tailwindcss";
+
+@theme {
+  --color-brand-orange: #FF5100;
+  --color-brand-orange-hover: #e04800;
+  --color-brand-white: #FAFAFA;
+  --color-brand-light: #fff3ee;
+  --color-brand-border: #ffd4c2;
+  --color-brand-muted: #6b7280;
+}
+
+body {
+  background-color: #FAFAFA;
+  color: #1f2937;
+}
