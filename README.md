@@ -14,6 +14,7 @@ A full-stack web application that allows users to submit ratings (1–5) for sto
 | Styling | Tailwind CSS v4 |
 | Auth | JWT (JSON Web Tokens) |
 | Password Hashing | bcryptjs |
+| Containerization | Docker + Docker Compose |
 
 ---
 
@@ -67,86 +68,108 @@ A full-stack web application that allows users to submit ratings (1–5) for sto
 
 ---
 
-## Project Structure
+## Running the App
 
-```
-StoreRate/
-├── backend/
-│   ├── src/
-│   │   ├── controllers/
-│   │   ├── routes/
-│   │   ├── middleware/
-│   │   └── validations/
-│   ├── db.js          # PostgreSQL connection
-│   ├── migrate.js     # Manual migration script
-│   ├── seed.js        # Creates default admin on first run
-│   ├── server.js      # Entry point (auto-migrates + seeds on start)
-│   ├── .env           # Your config (never committed)
-│   ├── .env.example   # Template for .env
-│   └── package.json
-│
-├── frontend/
-│   ├── src/
-│   │   ├── api/
-│   │   ├── context/
-│   │   ├── components/
-│   │   ├── pages/
-│   │   │   ├── admin/
-│   │   │   ├── user/
-│   │   │   └── storeowner/
-│   │   └── routes/
-│   └── package.json
-│
-└── README.md
-```
+There are two ways to run this project. Choose the one that works for you.
 
 ---
 
-## Setup Instructions
+## Option 1 — Docker (Easiest — Recommended)
 
-### Prerequisites
+### Requirements
+- [Docker Desktop](https://www.docker.com/products/docker-desktop) installed and running
 
-- [Node.js](https://nodejs.org) v18 or higher
-- [PostgreSQL](https://www.postgresql.org/download) v14 or higher
+### Steps
 
----
-
-### Step 1 — Clone the Repository
-
+**1. Clone the repository**
 ```bash
 git clone https://github.com/YOUR_USERNAME/StoreRate.git
 cd StoreRate
 ```
 
+**2. Start everything with one command**
+```bash
+docker-compose up --build
+```
+
+This automatically:
+- Creates the PostgreSQL database
+- Creates all tables
+- Creates the default admin account
+- Starts the backend on port 5000
+- Serves the frontend on port 80
+
+**3. Open your browser**
+
+Go to: **http://localhost**
+
+**4. Login as admin**
+```
+Email:    admin@storerate.com
+Password: Admin@1234
+```
+
+> Change this password immediately after first login.
+
+### Docker Commands
+
+```bash
+# Start all containers
+docker-compose up --build
+
+# Start in background
+docker-compose up -d --build
+
+# Stop all containers
+docker-compose down
+
+# Stop and delete all data (fresh start)
+docker-compose down -v
+
+# View logs
+docker-compose logs backend
+docker-compose logs frontend
+docker-compose logs db
+```
+
 ---
 
-### Step 2 — Create the Database
+## Option 2 — Manual Setup (Without Docker)
 
-Open **pgAdmin** or **psql** and run:
+### Requirements
+- [Node.js](https://nodejs.org) v20 or higher
+- [PostgreSQL](https://www.postgresql.org/download) v14 or higher
 
+### Steps
+
+**1. Clone the repository**
+```bash
+git clone https://github.com/YOUR_USERNAME/StoreRate.git
+cd StoreRate
+```
+
+**2. Create the database**
+
+Open pgAdmin or psql and run:
 ```sql
 CREATE DATABASE storerate;
 ```
 
-That's the only SQL you need to run manually. Everything else is automatic.
+That is the only SQL you need to run manually.
 
----
-
-### Step 3 — Backend Setup
+**3. Setup the backend**
 
 ```bash
 cd backend
 npm install
 ```
 
-Copy the example env file and fill in your details:
-
+Copy the example env file:
 ```bash
 cp .env.example .env
 ```
 
-Open `.env` and update these values:
-
+Open `.env` and fill in your values:
 ```env
 DB_HOST=localhost
 DB_PORT=5432
@@ -157,16 +180,14 @@ JWT_SECRET=your_generated_secret_here
 PORT=5000
 ```
 
-To generate a secure JWT secret, run this in your terminal:
-
+Generate a secure JWT secret by running:
 ```bash
 node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"
 ```
 
-Copy the output and paste it as your `JWT_SECRET` value.
+Copy the output and paste it as your `JWT_SECRET`.
 
 Start the backend:
-
 ```bash
 npm run dev
 ```
@@ -182,89 +203,75 @@ Password: Admin@1234
 =========================================
 ```
 
-> Tables are created automatically. Default admin is created automatically on first run.
-
----
-
-### Step 4 — Frontend Setup
+**4. Setup the frontend**
 
 Open a new terminal:
-
 ```bash
 cd frontend
 npm install
 npm run dev
 ```
 
-App runs at: **http://localhost:5173**
+Frontend runs at: **http://localhost:5173**
 
----
-
-### Step 5 — Login as Admin
+**5. Login as admin**
 
 Go to `http://localhost:5173/login` and use:
-
 ```
 Email:    admin@storerate.com
 Password: Admin@1234
 ```
 
-> Change this password immediately after first login via the "Change Password" link in the navbar.
+---
+
+## Ports
+
+| Mode | Frontend | Backend | Database |
+|------|----------|---------|----------|
+| Docker | http://localhost (port 80) | port 5000 | port 5432 |
+| Manual | http://localhost:5173 | port 5000 | port 5432 |
 
 ---
 
-### Step 6 — Create Store Owner and Store
+## Project Structure
 
-1. Login as admin
-2. Go to **Users tab** → click **Add User** → select role **Store Owner**
-3. Go to **Stores tab** → click **Add Store** → select the owner from the dropdown
-
----
-
-## API Endpoints
-
-### Auth
-| Method | Endpoint | Access | Description |
-|--------|----------|--------|-------------|
-| POST | /api/auth/register | Public | Register normal user |
-| POST | /api/auth/login | Public | Login all roles |
-| PUT | /api/auth/update-password | Logged in | Update password |
-
-### Admin
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | /api/admin/dashboard | Stats totals |
-| GET | /api/admin/users | List users (filter + sort) |
-| GET | /api/admin/users/:id | User details |
-| POST | /api/admin/users | Create user |
-| GET | /api/admin/stores | List stores (filter + sort) |
-| POST | /api/admin/stores | Create store |
-
-### Stores & Ratings
-| Method | Endpoint | Access | Description |
-|--------|----------|--------|-------------|
-| GET | /api/stores | Normal User | View all stores |
-| POST | /api/ratings | Normal User | Submit rating |
-| PUT | /api/ratings/:store_id | Normal User | Update rating |
-| GET | /api/ratings/my-store | Store Owner | View store ratings |
-
----
-
-## Available Scripts
-
-### Backend
-| Command | Description |
-|---------|-------------|
-| `npm run dev` | Start with auto-reload (nodemon) |
-| `npm start` | Start without auto-reload |
-| `npm run migrate` | Manually create tables |
-
-### Frontend
-| Command | Description |
-|---------|-------------|
-| `npm run dev` | Start Vite dev server |
-| `npm run build` | Build for production |
-| `npm run lint` | Run ESLint |
+```
+StoreRate/
+├── backend/
+│   ├── src/
+│   │   ├── controllers/       # Route logic
+│   │   ├── routes/            # URL definitions
+│   │   ├── middleware/        # JWT auth guards
+│   │   └── validations/       # Input validation rules
+│   ├── db.js                  # PostgreSQL connection
+│   ├── migrate.js             # Manual migration script
+│   ├── seed.js                # Creates default admin on first run
+│   ├── server.js              # Entry point (auto-migrates + seeds)
+│   ├── Dockerfile             # Docker image for backend
+│   ├── .dockerignore
+│   ├── .env                   # Your config (never committed)
+│   ├── .env.example           # Template for .env
+│   └── package.json
+│
+├── frontend/
+│   ├── src/
+│   │   ├── api/               # Axios instance
+│   │   ├── context/           # Auth context
+│   │   ├── components/        # Navbar
+│   │   ├── pages/
+│   │   │   ├── admin/         # Admin dashboard + user detail
+│   │   │   ├── user/          # User store listing
+│   │   │   └── storeowner/    # Store owner dashboard
+│   │   └── routes/            # App routes
+│   ├── Dockerfile             # Docker image for frontend
+│   ├── nginx.conf             # Nginx config for Docker
+│   ├── .dockerignore
+│   ├── .env.development       # Dev API URL (not committed)
+│   └── package.json
+│
+├── docker-compose.yml         # Runs all 3 services together
+└── README.md
+```
 
 ---
 
@@ -300,3 +307,60 @@ Password: Admin@1234
 | rating | INTEGER | 1 to 5 |
 | created_at | TIMESTAMP | Auto set |
 | UNIQUE | (user_id, store_id) | One rating per user per store |
+
+---
+
+## API Endpoints
+
+### Auth
+| Method | Endpoint | Access | Description |
+|--------|----------|--------|-------------|
+| POST | /api/auth/register | Public | Register normal user |
+| POST | /api/auth/login | Public | Login all roles |
+| PUT | /api/auth/update-password | Logged in | Update password |
+
+### Admin
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | /api/admin/dashboard | Stats totals |
+| GET | /api/admin/users | List users (filter + sort) |
+| GET | /api/admin/users/:id | User details |
+| POST | /api/admin/users | Create user |
+| GET | /api/admin/stores | List stores (filter + sort) |
+| POST | /api/admin/stores | Create store |
+
+### Stores and Ratings
+| Method | Endpoint | Access | Description |
+|--------|----------|--------|-------------|
+| GET | /api/stores | Normal User | View all stores |
+| POST | /api/ratings | Normal User | Submit rating |
+| PUT | /api/ratings/:store_id | Normal User | Update rating |
+| GET | /api/ratings/my-store | Store Owner | View store ratings |
+
+---
+
+## Available Scripts
+
+### Backend
+| Command | Description |
+|---------|-------------|
+| `npm run dev` | Start with auto-reload (nodemon) |
+| `npm start` | Start without auto-reload |
+| `npm run migrate` | Manually create tables |
+
+### Frontend
+| Command | Description |
+|---------|-------------|
+| `npm run dev` | Start Vite dev server (port 5173) |
+| `npm run build` | Build for production |
+| `npm run lint` | Run ESLint |
+
+---
+
+## After First Login
+
+1. Change the default admin password via **Change Password** in the navbar
+2. Go to **Users tab** → Add a Store Owner user
+3. Go to **Stores tab** → Add a Store and assign the owner
+4. The Store Owner can now login and see their store dashboard
+5. Register as a Normal User to test store ratings
