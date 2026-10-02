@@ -1,7 +1,7 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import Login from "../pages/login";
-import Register from "../pages/register";
+import Login from "../pages/Login";
+import Register from "../pages/Register";
 import AdminDashboard from "../pages/admin/AdminDashboard";
 import UserDashboard from "../pages/user/UserDashboard";
 import StoreOwnerDashboard from "../pages/storeowner/StoreOwnerDashboard";

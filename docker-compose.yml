@@ -1,0 +1,54 @@
+services:
+
+  # PostgreSQL database
+  db:
+    image: postgres:15-alpine
+    container_name: storerate_db
+    environment:
+      POSTGRES_DB: storerate
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # Express.js backend
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: storerate_backend
+    environment:
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_NAME: storerate
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+      JWT_SECRET: your_jwt_secret_change_this
+      PORT: 5000
+    ports:
+      - "5000:5000"
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: on-failure
+
+  # React frontend
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: storerate_frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+
+volumes:
+  postgres_data:
