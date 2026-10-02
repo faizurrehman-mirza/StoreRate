@@ -153,9 +153,17 @@ DB_PORT=5432
 DB_NAME=storerate
 DB_USER=postgres
 DB_PASSWORD=your_postgres_password_here
-JWT_SECRET=any_long_random_string_here
+JWT_SECRET=your_generated_secret_here
 PORT=5000
 ```
+
+To generate a secure JWT secret, run this in your terminal:
+
+```bash
+node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"
+```
+
+Copy the output and paste it as your `JWT_SECRET` value.
 
 Start the backend:
 
